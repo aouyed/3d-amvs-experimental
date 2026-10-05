@@ -44,22 +44,11 @@ def ds_closer(date, ds, time, param):
     month = date.strftime("%m")
     day = date.strftime("%d")
     print(ds)
-    ds.to_netcdf(
-        "../data/processed/"
-        + param.alg
-        + "_"
-        + "lambda_"
-        + str(param.Lambda)
-        + "_"
-        + month
-        + "_"
-        + day
-        + "_"
-        + year
-        + "_"
-        + time
-        + ".nc"
+    out = os.path.join(
+        c.DATA_PROCESSED,
+        f"{param.alg}_lambda_{param.Lambda}_{month}_{day}_{year}_{time}.nc",
     )
+    ds.to_netcdf(out)
 
 
 def model_closer(date):
@@ -67,7 +56,7 @@ def model_closer(date):
     year = date.strftime("%Y")
     month = date.strftime("%m")
     day = date.strftime("%d")
-    os.remove("../data/interim/model_" + month + "_" + day + "_" + year + ".nc")
+    os.remove(os.path.join(c.DATA_INTERIM, "model_" + month + "_" + day + "_" + year + ".nc"))
 
 
 def model_loader(date, pressure):
@@ -76,7 +65,7 @@ def model_loader(date, pressure):
     month = date.strftime("%m")
     day = date.strftime("%d")
     ds_model = xr.open_dataset(
-        "../data/interim/coarse_model_" + month + "_" + day + "_" + year + ".nc"
+        os.path.join(c.DATA_INTERIM, "coarse_model_" + month + "_" + day + "_" + year + ".nc")
     )
     ds_model = ds_model.sel(level=pressure, method="nearest")
     ds_model = ds_model.drop("level")
@@ -143,10 +132,7 @@ def serial_loop(ds, param):
 
 
 def main(param):
-    month_string = param.month_string
-    ds = xr.open_dataset(
-        "../data/processed/real_water_vapor_noqc_" + month_string + ".nc"
-    )
+    ds = xr.open_dataset(c.INPUT_FILE)
     # ds=ds.sel(plev=[850,700,500,400], method='nearest')
     print(ds)
     # ds=xr.open_dataset('../data/processed/jan_28_climcaps.nc')
@@ -160,7 +146,7 @@ if __name__ == "__main__":
     param.set_plev_coarse(5)
     param.set_alg("tvl1")
     param.set_Lambda(0.15)
-    param.set_timedelta(6)
+    param.set_timedelta(0)
     print(param.Lambda)
     start_time = time.time()
     main(param)

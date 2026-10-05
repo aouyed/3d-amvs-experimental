@@ -5,6 +5,8 @@ Created on Thu Apr 14 15:58:19 2022
 
 @author: aouyed
 """
+import os
+
 import xarray as xr
 import pandas as pd
 import numpy as np
@@ -32,10 +34,6 @@ def vertical_coarse(ds, thresh, n_layers):
         .coarsen(plev=n_layers, boundary="trim")
         .median()
     )
-    obs_array = ds["obs_time"].sel(plev=850, method="nearest")
-    obs_array = obs_array.values
-    obs_array = np.squeeze(obs_array)
-    ds_c["obs_time"] = (["latitude", "longitude", "satellite"], obs_array)
     return ds_c
 
 
@@ -46,27 +44,17 @@ def main(param):
         date_string = date.strftime("%m_%d_%Y")
         thresh = param.thresh
         for orbit in ("am", "pm"):
-            ds = xr.open_dataset(
-                "../data/processed/"
-                + param.alg
-                + "_lambda_"
-                + str(param.Lambda)
-                + "_"
-                + date_string
-                + "_"
-                + orbit
-                + ".nc"
+            raw_f = os.path.join(
+                config.DATA_PROCESSED,
+                f"{param.alg}_lambda_{param.Lambda}_{date_string}_{orbit}.nc",
             )
+            ds = xr.open_dataset(raw_f)
             ds = vertical_coarse(ds, thresh, param.plev_coarse)
-            ds.to_netcdf(
-                "../data/processed/"
-                + param.tag
-                + "_"
-                + date_string
-                + "_"
-                + orbit
-                + ".nc"
+            out = os.path.join(
+                config.DATA_PROCESSED,
+                f"{param.tag}_{date_string}_{orbit}.nc",
             )
+            ds.to_netcdf(out)
 
 
 if __name__ == "__main__":

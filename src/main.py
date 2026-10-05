@@ -55,20 +55,13 @@ def model_loader(date, pressure):
     return ds_model
 
 
-def ds_unit_calc(ds, day, pressure, time, param):
-    ds = ds.loc[{"day": day, "plev": pressure, "time": time}]
-    ds = ds.drop(["day", "plev", "time"])
-    ds = calc.prepare_ds(ds)
-    ds_model = model_loader(day, pressure)
-    df = ds.to_dataframe()
+def _run_swathes(ds, df, ds_model, param):
     swathes = calc.swath_initializer(ds, c.SWATH_MINUTES, c.SWATH_HOURS)
     for swath in swathes:
         ds_snpp = ds.loc[{"satellite": "snpp"}]
         ds_j1 = ds.loc[{"satellite": "j1"}]
-        start = swath[0]
-        end = swath[1]
         ds_merged, ds_snpp, ds_j1, df_snpp = calc.prepare_patch(
-            ds_snpp, ds_j1, ds_model, start, end
+            ds_snpp, ds_j1, ds_model, swath[0], swath[1]
         )
 
         if df_snpp.shape[0] > c.MIN_PATCH_PIXELS:
@@ -76,9 +69,16 @@ def ds_unit_calc(ds, day, pressure, time, param):
                 ds_merged, df, param
             )
 
-    ds = xr.Dataset.from_dataframe(df)
+    return df
 
-    return ds
+
+def ds_unit_calc(ds, day, pressure, time, param):
+    ds = ds.loc[{"day": day, "plev": pressure, "time": time}]
+    ds = ds.drop(["day", "plev", "time"])
+    ds = calc.prepare_ds(ds)
+    ds_model = model_loader(day, pressure)
+    df = _run_swathes(ds, ds.to_dataframe(), ds_model, param)
+    return xr.Dataset.from_dataframe(df)
 
 
 def serial_loop(ds, param):

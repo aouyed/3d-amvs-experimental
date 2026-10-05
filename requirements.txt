@@ -1,0 +1,19 @@
+# Direct dependencies for the experimental 3D-wind retrieval pipeline.
+# Versions are pinned (==) for reproducible installs, per pip's "Repeatable
+# Installs" guidance. Install with:
+#     pip install -r requirements.txt
+#
+# Note: this lists direct dependencies only. For a fully-frozen environment
+# (including transitive deps), run `pip freeze > requirements.lock.txt`.
+
+cartopy==0.26.0
+cdsapi==0.7.7
+matplotlib==3.10.3
+metpy==1.7.1
+netCDF4==1.7.2
+numpy==2.2.5
+opencv-contrib-python-headless==4.10.0.84
+pandas==2.2.3
+scipy==1.18.1
+tqdm==4.70.1
+xarray==2025.4.0

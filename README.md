@@ -41,8 +41,23 @@ to ~6 m/s, which is therefore a post-filter artifact rather than raw skill.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install opencv-contrib-python-headless scipy metpy xarray netCDF4 \
-            cartopy cdsapi tqdm matplotlib
+pip install -r requirements.txt
+```
+
+### Dependencies & reproducibility
+
+`requirements.txt` lists the **direct** dependencies with **pinned versions**
+(`==`) so installs are repeatable. This follows pip's guidance that pinning
+"protects you from bugs or incompatibilities in newly released versions"; the
+critical pin here is `opencv-contrib-python-headless==4.10.0.84`, which provides
+`cv2.optflow` (TV-L1 / DualTVL1) used by the retrieval.
+
+`requirements.txt` intentionally omits transitive dependencies (they are
+resolved automatically by pip) and developer-only tools. For a byte-for-byte
+frozen environment, run:
+
+```bash
+pip freeze > requirements.lock.txt
 ```
 
 Data (`data/`, `3d_amvs_old/`) and credentials (`~/.netrc`, `~/.cdsapirc`) are

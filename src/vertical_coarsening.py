@@ -6,6 +6,7 @@ Created on Thu Apr 14 15:58:19 2022
 @author: aouyed
 """
 import os
+import sys
 
 import xarray as xr
 import pandas as pd
@@ -17,13 +18,9 @@ from parameters import parameters
 
 
 def compute(ds, thresh):
-
-    u_error = ds["u"] - ds["u_era5"]
-    v_error = ds["v"] - ds["v_era5"]
-    ds["error_mag"] = np.sqrt(u_error**2 + v_error**2)
-    ds = ds.where(ds.error_mag < thresh)
-    ds = ds.drop("error_mag")
-    return ds
+    """Filter to winds with error magnitude below `thresh` (returns a new dataset)."""
+    error_mag = np.sqrt((ds["u"] - ds["u_era5"]) ** 2 + (ds["v"] - ds["v_era5"]) ** 2)
+    return ds.where(error_mag < thresh)
 
 
 def vertical_coarse(ds, thresh, n_layers):
@@ -37,13 +34,14 @@ def vertical_coarse(ds, thresh, n_layers):
     return ds_c
 
 
-def main(param):
+def main(param, orbit=None):
     dates = param.dates
+    orbits = [orbit] if orbit is not None else ("am", "pm")
 
     for date in tqdm(dates):
         date_string = date.strftime("%m_%d_%Y")
         thresh = param.thresh
-        for orbit in ("am", "pm"):
+        for orbit in orbits:
             raw_f = os.path.join(
                 config.DATA_PROCESSED,
                 f"{param.alg}_lambda_{param.Lambda}_{date_string}_{orbit}.nc",
@@ -58,5 +56,6 @@ def main(param):
 
 
 if __name__ == "__main__":
+    orbit = sys.argv[1] if len(sys.argv) > 1 else None
     param = parameters()
-    main(param)
+    main(param, orbit)

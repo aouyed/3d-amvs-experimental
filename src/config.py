@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+import numpy as np
+
 MONTH = datetime(2020, 7, 1)
 month_string = MONTH.strftime("%B").lower()
 QC = "noqc"
@@ -21,6 +23,16 @@ INPUT_FILE = os.path.join(DATA_PROCESSED, f"real_water_vapor_{HUMIDITY_SOURCE}_j
 H2O_CUTOFF_PA = 10000.0
 # Restrict wind vectors to |latitude| <= LAT_BOUND (degrees) for error metrics.
 LAT_BOUND = 60.0
+
+# Retrieval geometry / timing (shared by main.py and amv_calculators.py).
+EARTH_RADIUS = 6371000.0
+DEG_TO_RAD = np.deg2rad(1)
+SCALE_DEG = EARTH_RADIUS * DEG_TO_RAD      # meters per degree (latitude / equator lon)
+SWATH_MINUTES = 5
+SWATH_HOURS = 24
+SNPP_OFFSET_MIN = 50
+MODEL_MIDTIME_MIN = 25
+MIN_PATCH_PIXELS = 100
 # GEODESICS={'swath':[(-47.5, -60), (45, -30),'latitude'],
 # 'equator':[(6.5, -149.5),(6.5, 4.5),'longitude']}
 # GEODESICS={'swath':[(-50, -130), (46, -91),'latitude'],

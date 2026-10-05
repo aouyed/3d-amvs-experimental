@@ -6,36 +6,19 @@ Created on Wed Mar 24 15:17:31 2021
 @author: aouyed
 """
 import os
-import xarray as xr
-import numpy as np
-import amv_calculators as calc
+import sys
 import time
+
+import numpy as np
 import pandas as pd
-import era5_downloader as ed
-from datetime import datetime
-import config as c
+import xarray as xr
 from tqdm import tqdm
+
+import amv_calculators as calc
+import config as c
 from parameters import parameters
 
 pd.options.mode.chained_assignment = None  # default='warn'
-
-QC = c.QC
-
-
-ALG = "farneback"
-
-
-R = 6371000
-
-drad = np.deg2rad(1)
-dx = R * drad
-scale_x = dx
-dy = R * drad
-scale_y = dy
-swath_hours = 24
-
-
-LABEL = "specific_humidity_mean"
 
 
 def ds_closer(date, ds, time, param):
@@ -49,14 +32,6 @@ def ds_closer(date, ds, time, param):
         f"{param.alg}_lambda_{param.Lambda}_{month}_{day}_{year}_{time}.nc",
     )
     ds.to_netcdf(out)
-
-
-def model_closer(date):
-    date = pd.to_datetime(str(date))
-    year = date.strftime("%Y")
-    month = date.strftime("%m")
-    day = date.strftime("%d")
-    os.remove(os.path.join(c.DATA_INTERIM, "model_" + month + "_" + day + "_" + year + ".nc"))
 
 
 def model_loader(date, pressure):
@@ -86,7 +61,7 @@ def ds_unit_calc(ds, day, pressure, time, param):
     ds = calc.prepare_ds(ds)
     ds_model = model_loader(day, pressure)
     df = ds.to_dataframe()
-    swathes = calc.swath_initializer(ds, 5, swath_hours)
+    swathes = calc.swath_initializer(ds, c.SWATH_MINUTES, c.SWATH_HOURS)
     for swath in swathes:
         ds_snpp = ds.loc[{"satellite": "snpp"}]
         ds_j1 = ds.loc[{"satellite": "j1"}]
@@ -96,7 +71,7 @@ def ds_unit_calc(ds, day, pressure, time, param):
             ds_snpp, ds_j1, ds_model, start, end
         )
 
-        if df_snpp.shape[0] > 100:
+        if df_snpp.shape[0] > c.MIN_PATCH_PIXELS:
             df, ds_snpp_p, ds_j1_p, ds_model_p = calc.amv_calculator(
                 ds_merged, df, param
             )
@@ -128,11 +103,12 @@ def serial_loop(ds, param):
                     ds_total = xr.concat([ds_total, ds_unit], "plev")
 
             ds_closer(day, ds_total, time, param)
-        # model_closer(day)
 
 
-def main(param):
+def main(param, orbit=None):
     ds = xr.open_dataset(c.INPUT_FILE)
+    if orbit is not None:
+        ds = ds.sel(time=[orbit])
     # ds=ds.sel(plev=[850,700,500,400], method='nearest')
     print(ds)
     # ds=xr.open_dataset('../data/processed/jan_28_climcaps.nc')
@@ -147,7 +123,8 @@ if __name__ == "__main__":
     param.set_alg("tvl1")
     param.set_Lambda(0.15)
     param.set_timedelta(0)
+    orbit = sys.argv[1] if len(sys.argv) > 1 else None
     print(param.Lambda)
     start_time = time.time()
-    main(param)
+    main(param, orbit)
     print("--- %s seconds ---" % (time.time() - start_time))

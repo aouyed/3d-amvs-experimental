@@ -1,0 +1,20 @@
+# --- data & artifacts (regenerable / large / not source) ---
+data/
+3d_amvs_old/
+*.nc
+*.npz
+*.png
+*.gz
+*.pkl
+*.pdf
+
+# --- python ---
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# --- os / editor ---
+.DS_Store
+*~
+*#

@@ -302,14 +302,11 @@ def flow_calculator(ds_snpp, ds_j1, ds_merged, param):
 
 def df_filler(df, df_sat):
     """
-    Fill DataFrame with satellite data.
+    Fill DataFrame with satellite data in place.
 
     Args:
-        df (pandas.DataFrame): DataFrame to fill.
+        df (pandas.DataFrame): DataFrame to fill (mutated in place).
         df_sat (pandas.DataFrame): Satellite data.
-
-    Returns:
-        pandas.DataFrame: Updated DataFrame.
     """
     swathi = df_sat.index.values
     df["humidity_overlap"].loc[df.index.isin(swathi)] = df_sat["specific_humidity_mean"]
@@ -318,26 +315,20 @@ def df_filler(df, df_sat):
     df["u"].loc[df.index.isin(swathi)] = df_sat["u"]
     df["v"].loc[df.index.isin(swathi)] = df_sat["v"]
     df["dt_inv"].loc[df.index.isin(swathi)] = df_sat["dt_inv"]
-    return df
 
 
 def df_filler_model(df, df_sat, df_m):
     """
-    Fill DataFrame with model data.
+    Fill DataFrame with model data in place.
 
     Args:
-        df (pandas.DataFrame): DataFrame to fill.
+        df (pandas.DataFrame): DataFrame to fill (mutated in place).
         df_sat (pandas.DataFrame): Satellite data.
         df_m (pandas.DataFrame): Model data.
-
-    Returns:
-        pandas.DataFrame: Updated DataFrame.
     """
     swathi = df_sat.index.values
     df["u_era5"].loc[df.index.isin(swathi)] = df_m["u"]
     df["v_era5"].loc[df.index.isin(swathi)] = df_m["v"]
-
-    return df
 
 
 def amv_calculator(ds_merged, df, param):
@@ -365,9 +356,9 @@ def amv_calculator(ds_merged, df, param):
         ["latitude", "longitude", "satellite"]
     ).sort_index()
     df_j1 = df_j1.reorder_levels(["latitude", "longitude", "satellite"]).sort_index()
-    df = df_filler(df, df_snpp)
-    df = df_filler(df, df_j1)
-    df = df_filler_model(df, df_j1, df_model)
-    df = df_filler_model(df, df_snpp, df_model)
+    df_filler(df, df_snpp)
+    df_filler(df, df_j1)
+    df_filler_model(df, df_j1, df_model)
+    df_filler_model(df, df_snpp, df_model)
 
     return df, ds_snpp, ds_j1, ds_merged

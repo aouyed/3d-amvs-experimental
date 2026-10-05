@@ -16,11 +16,11 @@ class parameters:
         self.alg = "tvl1"
         self.coll_dt = 1.5
         self.coll_dx = 1
-        self.timedelta = 6
+        self.timedelta = 0
         self.Lambda = 0.15
         self.plev_coarse = 5
         self.thresh = 10
-        self.month = datetime.datetime(2020, 1, 1)
+        self.month = datetime.datetime(2020, 7, 1)
         self.month_string = self.month.strftime("%B").lower()
         self.geodesics = {
             "swath": [(-35.4, 28.75), (49.74, 66.13), "latitude"],

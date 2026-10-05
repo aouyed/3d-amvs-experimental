@@ -52,3 +52,16 @@ def test_grid_obs_time_ignores_out_of_bounds_and_nan():
     # only FOV1 is in bounds and finite
     assert cnt.sum() == 1
     assert cnt[0, 90, 180] == 1
+
+
+def test_to_specific_humidity():
+    h = np.array([1e23, 2e23])
+    dp = np.array([10000.0, 20000.0])
+    q = collocate.to_specific_humidity(h, dp)
+    expected = h * collocate.M_H2O * collocate.G / (dp * collocate.N_A)
+    assert np.allclose(q, expected)
+
+
+def test_to_specific_humidity_sanity():
+    q = collocate.to_specific_humidity(np.array([1e23]), np.array([10000.0]))
+    assert 0.0 < q[0] < 0.05

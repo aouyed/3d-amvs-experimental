@@ -15,6 +15,7 @@ import xarray as xr
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 import vertical_coarsening as vc
+import config
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "data", "processed")
@@ -39,8 +40,8 @@ lon_r = LON[lj]
 NY, NX = len(lat_r), len(lon_r)
 NLEV = len(plev)
 
-THRESH = 10.0
-N_LAYERS = 5
+THRESH = config.COARSEN_THRESH
+N_LAYERS = config.COARSEN_LAYERS
 
 print("=" * 80)
 for p, pname in enumerate(["ascending", "descending"]):
@@ -83,8 +84,7 @@ for p, pname in enumerate(["ascending", "descending"]):
           f"RMSVD all-levels {rmsvd_all:5.1f} -> coarsened {rmsvd_c:5.1f} m/s | "
           f"speed median {np.nanmedian(spd):5.1f} m/s | p90 {np.nanpercentile(spd,90):5.1f} m/s")
 
-    # drop obs_time (datetime64 NaT) before saving to avoid CF encode issues
-    ds_out = ds_c.drop_vars("obs_time")
+    ds_out = ds_c
     ds_out.attrs["title"] = f"3D-AMV winds vertically coarsened (x{N_LAYERS}), {pname}, July 1 2020"
     ds_out.attrs["thresh"] = THRESH
     out = os.path.join(OUT, f"wind_coarsened_{pname}_july1{SUF}.nc")

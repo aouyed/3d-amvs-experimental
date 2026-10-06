@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Full pipeline on all H2O levels (100 hPa cutoff):
-  * per-level swath retrieval (existing swath_initializer/prepare_patch/amv_calculator)
-  * ERA5 collocated via prepare_patch (existing)
-  * vertical coarsening via existing vertical_coarsening.vertical_coarse
+Optical-flow retrieval on all H2O levels (>= 100 hPa cutoff).
 
-Resumable: checkpoints U/V/UERA/VERA per (pass, level) to
-data/processed/retrieval_ckpt.npz so the run can be restarted in batches.
+Reads data/processed/l2_collocated_july1.npz (built by collocate_full_day.py),
+runs the 5-min swath retrieval (amv_calculators), and checkpoints U/V/UERA/VERA
+per (pass, level) to data/processed/retrieval_ckpt.npz (resumable).
+
+Vertical coarsening is a separate step: run_vertical_coarsening.py.
 """
 
 import os
@@ -18,7 +18,7 @@ import xarray as xr
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 import amv_calculators as calc
-import vertical_coarsening as vc
+import config
 from parameters import parameters
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -104,13 +104,15 @@ for p, pname in enumerate(PASSES):
 
         ds_model = build_era5_model(hpa)
 
-        for start, end in calc.swath_initializer(ds_unit, 5, 24):
+        for start, end in calc.swath_initializer(
+            ds_unit, config.SWATH_MINUTES, config.SWATH_HOURS
+        ):
             ds_snpp = ds_unit.loc[{"satellite": "snpp"}]
             ds_j1 = ds_unit.loc[{"satellite": "j1"}]
             ds_merged, ds_snpp, ds_j1, df_snpp = calc.prepare_patch(
                 ds_snpp, ds_j1, ds_model, start, end
             )
-            if df_snpp.shape[0] > 100:
+            if df_snpp.shape[0] > config.MIN_PATCH_PIXELS:
                 df, _, _, _ = calc.amv_calculator(ds_merged, df, param)
 
         ds_r = xr.Dataset.from_dataframe(df)

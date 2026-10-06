@@ -12,20 +12,27 @@ This is a **private experimental development repository** that mirrors
 `aouyed/3d-amvs` (added as the `upstream` remote). Experimental work is committed
 here and, once validated, is intended to be pushed to the public `aouyed/3d-amvs`.
 
-## What this branch adds
+## Quick start
 
-Reproducible CLIMCAPS → 3D-wind pipeline for July 1, 2020 (SNPP + NOAA-20):
+One command per stage, run in order (each stage skips work already done):
 
-| Script | Purpose |
-|---|---|
-| `download_l2.py` | Download CLIMCAPS L2 granules (GES DISC) |
-| `download_era5.py` | Download ERA5 u/v (CDS API) |
-| `collocate_full_day.py` | Grid L2 obs_time + L3 `spec_hum` (QCC) to 1° |
-| `collocate_l2_noqc.py` | Grid L2 `h2o_vap_mol_lay`-derived `spec_hum` to 1° **with no QC** |
-| `run_retrieval_all_levels.py` | Per-level 5-min swath optical-flow retrieval (resumable) |
-| `run_vertical_coarsening.py` | Gross-error filter (δ=10 m/s) + 5-level median coarsening |
-| `error_analysis.py` | RMSVD / bias / speed-corr vs ERA5 |
-| `plot_coarsened.py`, `plot_histograms.py` | Quiver + histogram figures |
+```bash
+.venv/bin/python run_pipeline.py download   # 1. raw CLIMCAPS L2 + ERA5 (resumable)
+.venv/bin/python run_pipeline.py run        # 2. collocate -> retrieval -> coarsening
+.venv/bin/python run_pipeline.py analyze    # 3. error metrics + figures
+```
+
+Or everything at once:
+
+```bash
+.venv/bin/python run_pipeline.py all
+```
+
+| Command | Runs | Produces |
+|---|---|---|
+| `download` | `download_l2.py`, `download_era5.py` | `data/raw/l2/*`, `data/raw/era5/era5_uv_20200701.nc` |
+| `run` | `collocate_full_day.py` → `run_retrieval_all_levels.py` → `run_vertical_coarsening.py` | `data/processed/l2_collocated_july1.npz` → `retrieval_ckpt.npz` → `wind_coarsened_{ascending,descending}_july1.nc` |
+| `analyze` | `error_analysis.py`, `plot_coarsened.py`, `plot_histograms.py` | metrics + `data/processed/plots/*.png` |
 
 ## Key finding
 

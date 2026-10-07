@@ -7,6 +7,7 @@ run_vertical_coarsening.py) and writes one two-panel quiver figure per
 coarsened pressure level and pass, annotated with the per-level RMSVD.
 """
 import os
+import sys
 
 import matplotlib
 matplotlib.use("Agg")
@@ -19,9 +20,11 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PLOTS = os.path.join(ROOT, "data", "processed", "plots")
 os.makedirs(PLOTS, exist_ok=True)
 
+SUF = f"_{sys.argv[1]}" if len(sys.argv) > 1 else ""
+
 FILES = {
-    "ascending": os.path.join(ROOT, "data", "processed", "wind_coarsened_ascending_july1.nc"),
-    "descending": os.path.join(ROOT, "data", "processed", "wind_coarsened_descending_july1.nc"),
+    "ascending": os.path.join(ROOT, "data", "processed", f"wind_coarsened_ascending_july1{SUF}.nc"),
+    "descending": os.path.join(ROOT, "data", "processed", f"wind_coarsened_descending_july1{SUF}.nc"),
 }
 
 
@@ -63,7 +66,7 @@ for pname, f in FILES.items():
                f"ERA5 {lev:.0f} hPa")
         fig.suptitle(f"RMSVD = {r:.2f} m/s", fontsize=12)
         fig.tight_layout(rect=[0, 0, 1, 0.95])
-        out = os.path.join(PLOTS, f"quiver_{pname}_{lev:.0f}hPa.png")
+        out = os.path.join(PLOTS, f"quiver_{pname}_{lev:.0f}hPa{SUF}.png")
         fig.savefig(out, dpi=130, bbox_inches="tight")
         plt.close(fig)
         print(f"wrote {out}  (RMSVD {r:.2f} m/s)")

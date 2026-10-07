@@ -50,16 +50,16 @@ def compute_metrics(u, v, u_era5, v_era5):
     }
 
 
-def load_coarsened(tag=None):
+def load_coarsened(suf=""):
     """Load the coarsened output for both passes (I/O)."""
     dsets = {}
     for pname in ("ascending", "descending"):
-        f = os.path.join(config.DATA_PROCESSED, f"wind_coarsened_{pname}_july1.nc")
+        f = os.path.join(config.DATA_PROCESSED, f"wind_coarsened_{pname}_july1{suf}.nc")
         dsets[pname] = xr.open_dataset(f).sel(satellite="snpp")
     return dsets
 
 
-def plot(metrics, per_level):
+def plot(metrics, per_level, suf=""):
     """Write figures (side effect)."""
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
@@ -82,13 +82,13 @@ def plot(metrics, per_level):
     ax.legend(); ax.grid(alpha=0.3)
 
     fig.tight_layout()
-    fig.savefig(os.path.join(PLOTS, "error_analysis.png"), dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.join(PLOTS, f"error_analysis{suf}.png"), dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
 def main():
-    param = parameters()
-    dsets = load_coarsened(param.tag)
+    suf = f"_{sys.argv[1]}" if len(sys.argv) > 1 else ""
+    dsets = load_coarsened(suf)
 
     per_level = {}
     all_metrics = []
@@ -122,8 +122,8 @@ def main():
     overall = compute_metrics(combined["u"], combined["v"], combined["u_era5"], combined["v_era5"])
     print(f"OVERALL: n={overall['n']} | RMSVD {overall['rmsvd']:.2f} m/s | speed corr {overall['corr']:.3f}")
 
-    plot(overall, per_level)
-    print(f"wrote {os.path.join(PLOTS, 'error_analysis.png')}")
+    plot(overall, per_level, suf)
+    print(f"wrote {os.path.join(PLOTS, f'error_analysis{suf}.png')}")
 
 
 if __name__ == "__main__":

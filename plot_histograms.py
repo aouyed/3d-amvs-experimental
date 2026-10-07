@@ -42,9 +42,9 @@ def hist2d(spd, spd_e):
 
 
 new = collect([os.path.join(OUT, f"wind_coarsened_{p}_july1.nc") for p in ("ascending", "descending")])
-l2q_files = [os.path.join(OUT, f"wind_coarsened_{p}_july1_l2q.nc") for p in ("ascending", "descending")]
+l2q_files = [os.path.join(OUT, f"wind_coarsened_{p}_july1_noqc.nc") for p in ("ascending", "descending")]
 if not all(os.path.exists(f) for f in l2q_files):
-    print("SKIP: L2-QC (_l2q) comparison files not present; run the no-QC L2 variant to generate them.")
+    print("SKIP: no-QC L2 (_noqc) comparison files not present; run the no-QC L2 variant to generate them.")
     raise SystemExit(0)
 old = collect(l2q_files)
 

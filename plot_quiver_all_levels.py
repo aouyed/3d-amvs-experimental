@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Quiver maps: retrieved vs ERA5 at representative coarsened levels."""
+"""Quiver maps of every coarsened 3D-AMV level (retrieved vs ERA5), with RMSVD.
 
+Reads wind_coarsened_{ascending,descending}_july1.nc (produced by
+run_vertical_coarsening.py) and writes one two-panel quiver figure per
+coarsened pressure level and pass, annotated with the per-level RMSVD.
+"""
 import os
 
 import matplotlib
@@ -19,7 +23,15 @@ FILES = {
     "ascending": os.path.join(ROOT, "data", "processed", "wind_coarsened_ascending_july1.nc"),
     "descending": os.path.join(ROOT, "data", "processed", "wind_coarsened_descending_july1.nc"),
 }
-TARGETS = [850.0, 500.0, 250.0]   # representative levels (hPa)
+
+
+def rmsvd(u, v, ue, ve):
+    """RMS vector difference over pixels where all four fields are valid."""
+    m = np.isfinite(u) & np.isfinite(v) & np.isfinite(ue) & np.isfinite(ve)
+    if not m.any():
+        return np.nan
+    err = np.sqrt((u - ue) ** 2 + (v - ve) ** 2)
+    return float(np.sqrt(np.mean(err[m] ** 2)))
 
 
 def one_ax(ax, lon, lat, u, v, title, scale=120):
@@ -33,20 +45,26 @@ def one_ax(ax, lon, lat, u, v, title, scale=120):
 
 for pname, f in FILES.items():
     ds = xr.open_dataset(f).sel(satellite="snpp")
-    for tgt in TARGETS:
-        d = ds.sel(plev=tgt, method="nearest")
-        pl = float(d.plev)
+    for pl in ds.plev.values:
+        lev = float(pl)
+        d = ds.sel(plev=lev)
+        # per-level RMSVD on the full-resolution field (before plotting coarsening)
+        r = rmsvd(d["u"].values, d["v"].values,
+                  d["u_era5"].values, d["v_era5"].values)
         # coarsen for plotting density
         d = d.coarsen(latitude=4, longitude=4, boundary="trim").mean()
         X, Y = np.meshgrid(d.longitude.values, d.latitude.values)
 
         fig, axes = plt.subplots(1, 2, figsize=(16, 5),
                                  subplot_kw={"projection": ccrs.PlateCarree()})
-        one_ax(axes[0], X, Y, d["u"].values, d["v"].values, f"{pname} retrieved {pl:.0f} hPa")
-        one_ax(axes[1], X, Y, d["u_era5"].values, d["v_era5"].values, f"ERA5 {pl:.0f} hPa")
-        fig.tight_layout()
-        out = os.path.join(PLOTS, f"compare_{pname}_{pl:.0f}hPa.png")
+        one_ax(axes[0], X, Y, d["u"].values, d["v"].values,
+               f"{pname} retrieved {lev:.0f} hPa")
+        one_ax(axes[1], X, Y, d["u_era5"].values, d["v_era5"].values,
+               f"ERA5 {lev:.0f} hPa")
+        fig.suptitle(f"RMSVD = {r:.2f} m/s", fontsize=12)
+        fig.tight_layout(rect=[0, 0, 1, 0.95])
+        out = os.path.join(PLOTS, f"quiver_{pname}_{lev:.0f}hPa.png")
         fig.savefig(out, dpi=130, bbox_inches="tight")
         plt.close(fig)
-        print(f"wrote {out}")
+        print(f"wrote {out}  (RMSVD {r:.2f} m/s)")
     ds.close()

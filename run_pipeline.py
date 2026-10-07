@@ -62,7 +62,7 @@ def analyze():
     if not _need(COARSENED, "run `python run_pipeline.py run` first"):
         return
     _step("error_analysis.py")
-    _step("plot_coarsened.py")
+    _step("plot_quiver_all_levels.py")
     _step("plot_histograms.py")
 
 

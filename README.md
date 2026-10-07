@@ -32,7 +32,7 @@ Or everything at once:
 |---|---|---|
 | `download` | `download_l2.py`, `download_era5.py` | `data/raw/l2/*`, `data/raw/era5/era5_uv_20200701.nc` |
 | `run` | `collocate_full_day.py` → `run_retrieval_all_levels.py` → `run_vertical_coarsening.py` | `data/processed/l2_collocated_july1.npz` → `retrieval_ckpt.npz` → `wind_coarsened_{ascending,descending}_july1.nc` |
-| `analyze` | `error_analysis.py`, `plot_coarsened.py`, `plot_histograms.py` | metrics + `data/processed/plots/*.png` |
+| `analyze` | `error_analysis.py`, `plot_quiver_all_levels.py`, `plot_histograms.py` | metrics + `data/processed/plots/*.png` |
 
 ## Key finding
 

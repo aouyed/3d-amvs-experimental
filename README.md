@@ -51,6 +51,24 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Credentials
+
+The `download` stage needs two credential files (both are gitignored — never commit them):
+
+- **Earthdata** — `~/.netrc`:
+  ```
+  machine urs.earthdata.nasa.gov
+      login <username>
+      password <password>
+  ```
+- **CDS API** — `~/.cdsapirc`:
+  ```
+  url: https://cds.climate.copernicus.eu/api
+  key: <UID>:<API_KEY>
+  ```
+
+`run_pipeline.py download` (and `all`) prompts interactively for whichever is missing. You can also run `python setup_credentials.py` manually, or `python setup_credentials.py --check` to inspect. In non-interactive/CI runs, create the files yourself — the pipeline prints instructions and exits instead of prompting.
+
 ### Dependencies & reproducibility
 
 `requirements.txt` lists the **direct** dependencies with **pinned versions**

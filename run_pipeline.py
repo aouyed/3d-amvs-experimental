@@ -12,6 +12,8 @@ import os
 import subprocess
 import sys
 
+import setup_credentials as creds
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 ERA5 = os.path.join(ROOT, "data", "raw", "era5", "era5_uv_20200701.nc")
@@ -40,9 +42,22 @@ def _need(paths, hint):
     return True
 
 
+def _require_creds(name, ok, prompt):
+    if ok():
+        return
+    if not sys.stdin.isatty():
+        print(f"[credentials] {name} credentials missing — run "
+              f"`python setup_credentials.py` manually (see README 'Credentials').",
+              file=sys.stderr)
+        sys.exit(f"missing {name} credentials")
+    prompt()
+
+
 def download():
+    _require_creds("Earthdata", creds.earthdata_ok, creds.prompt_earthdata)
     _step("download_l2.py")              # resumable: skips granules already present
     if not os.path.exists(ERA5):
+        _require_creds("CDS", creds.cds_ok, creds.prompt_cds)
         _step("download_era5.py")
 
 

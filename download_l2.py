@@ -58,6 +58,8 @@ def main():
             if done % 25 == 0:
                 print(f"  progress: {done}/{len(todo)} (ok {ok}, fail {fail})")
     print(f"DONE: ok={ok}, fail={fail}, total processed={done}")
+    if fail:
+        sys.exit(f"{fail} granules failed to download — see errors above.")
 
 
 if __name__ == "__main__":

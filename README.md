@@ -69,6 +69,8 @@ The `download` stage needs two credential files (both are gitignored — never c
 
 `run_pipeline.py download` (and `all`) prompts interactively for whichever is missing. You can also run `python setup_credentials.py` manually, or `python setup_credentials.py --check` to inspect. In non-interactive/CI runs, create the files yourself — the pipeline prints instructions and exits instead of prompting.
 
+To change credentials (e.g. after an authentication failure), run `python run_pipeline.py credentials` (or `python setup_credentials.py --force`), and `python setup_credentials.py --validate` to test them.
+
 ### Dependencies & reproducibility
 
 `requirements.txt` lists the **direct** dependencies with **pinned versions**

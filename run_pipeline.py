@@ -2,10 +2,11 @@
 """Single entry point for the 3D-AMV pipeline (July 1 2020 CLIMCAPS).
 
 Usage:
-    python run_pipeline.py download   # raw CLIMCAPS L2 + ERA5 (resumable)
-    python run_pipeline.py run        # collocate -> retrieval -> coarsening
-    python run_pipeline.py analyze    # error metrics + figures
-    python run_pipeline.py all        # download + run + analyze
+    python run_pipeline.py download     # raw CLIMCAPS L2 + ERA5 (resumable)
+    python run_pipeline.py run          # collocate -> retrieval -> coarsening
+    python run_pipeline.py analyze      # error metrics + figures
+    python run_pipeline.py all          # download + run + analyze
+    python run_pipeline.py credentials  # re-enter Earthdata/CDS credentials
 """
 import argparse
 import os
@@ -25,11 +26,14 @@ COARSENED = [
 ]
 
 
-def _step(script):
+def _step(script, hint=None):
     print(f"\n=== {script} ===", flush=True)
     rc = subprocess.run([sys.executable, script], cwd=ROOT).returncode
     if rc != 0:
-        sys.exit(f"`{script}` failed (exit {rc}) — stopping.")
+        msg = f"`{script}` failed (exit {rc})"
+        if hint:
+            msg += f"\n  hint: {hint}"
+        sys.exit(msg + " — stopping.")
 
 
 def _need(paths, hint):
@@ -55,10 +59,16 @@ def _require_creds(name, ok, prompt):
 
 def download():
     _require_creds("Earthdata", creds.earthdata_ok, creds.prompt_earthdata)
-    _step("download_l2.py")              # resumable: skips granules already present
+    _step("download_l2.py",              # resumable: skips granules already present
+          hint="If this was an authentication failure, run "
+               "`python run_pipeline.py credentials` to re-enter your Earthdata "
+               "credentials, then re-run `download`.")
     if not os.path.exists(ERA5):
         _require_creds("CDS", creds.cds_ok, creds.prompt_cds)
-        _step("download_era5.py")
+        _step("download_era5.py",
+              hint="If this was an authentication failure, run "
+                   "`python run_pipeline.py credentials` to re-enter your CDS "
+                   "credentials, then re-run `download`.")
 
 
 def run():
@@ -87,8 +97,16 @@ def all_():
     analyze()
 
 
+def credentials():
+    print("\n=== setup_credentials.py --force ===", flush=True)
+    rc = subprocess.run([sys.executable, "setup_credentials.py", "--force"], cwd=ROOT).returncode
+    if rc != 0:
+        sys.exit("`setup_credentials.py --force` failed.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=["download", "run", "analyze", "all"])
+    parser.add_argument("stage", choices=["download", "run", "analyze", "all", "credentials"])
     args = parser.parse_args()
-    {"download": download, "run": run, "analyze": analyze, "all": all_}[args.stage]()
+    {"download": download, "run": run, "analyze": analyze, "all": all_,
+     "credentials": credentials}[args.stage]()

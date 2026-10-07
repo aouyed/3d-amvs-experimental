@@ -2,7 +2,7 @@
 """Generate CLIMCAPS L2 granule manifests for July 1 2020 (SNPP + JPSS-1).
 
 Queries the NASA CMR (Common Metadata Repository) for CLIMCAPS L2 (CrIS)
-retrieval granules overlapping 2020-07-01 and writes two tab-separated
+standard (CPS) granules overlapping 2020-07-01 and writes two tab-separated
 manifest files consumed by download_l2.py and the collocation scripts:
 
     data/raw/l2/manifest_snpp.txt
@@ -23,8 +23,8 @@ CMR = "https://cmr.earthdata.nasa.gov/search/granules.json"
 
 # CMR collection short name -> manifest basename.
 COLLECTIONS = {
-    "SNDRSNIML2CCPRET": "manifest_snpp.txt",  # Suomi NPP CrIS CLIMCAPS L2 (retrieval)
-    "SNDRJ1IML2CCPRET": "manifest_j1.txt",    # JPSS-1 (NOAA-20) CrIS CLIMCAPS L2 (retrieval)
+    "SNDRSNIML2CPS": "manifest_snpp.txt",  # Suomi NPP CrIS CLIMCAPS L2 standard (CPS)
+    "SNDRJ1IML2CPS": "manifest_j1.txt",    # JPSS-1 (NOAA-20) CrIS CLIMCAPS L2 standard (CPS)
 }
 
 DATA_REL = "http://esipfed.org/ns/fedsearch/1.1/data#"

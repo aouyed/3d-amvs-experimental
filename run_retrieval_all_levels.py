@@ -36,7 +36,7 @@ plev = z["plev"]        # hPa, 56 levels
 
 LAT = np.arange(-89.5, 90.0, 1.0)
 LON = np.arange(-179.5, 180.0, 1.0)
-PASSES = ["ascending", "descending"]
+PASSES = ["descending", "ascending"]
 
 li = np.where((LAT >= -60.0) & (LAT <= 60.0))[0]
 lj = np.where((LON >= -180.0) & (LON <= 180.0))[0]

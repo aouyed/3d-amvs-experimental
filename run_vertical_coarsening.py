@@ -44,7 +44,7 @@ THRESH = config.COARSEN_THRESH
 N_LAYERS = config.COARSEN_LAYERS
 
 print("=" * 80)
-for p, pname in enumerate(["ascending", "descending"]):
+for p, pname in enumerate(["descending", "ascending"]):
     u = U[:, p].transpose(1, 2, 3, 0)        # (level, lat, lon, sat)
     v = V[:, p].transpose(1, 2, 3, 0)
     ue = UERA[:, p].transpose(1, 2, 3, 0)

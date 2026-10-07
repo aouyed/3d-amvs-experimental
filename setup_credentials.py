@@ -70,8 +70,8 @@ def write_earthdata(username, password):
     _chmod_600(NETRC)
 
 
-def write_cds(uid, api_key):
-    content = f"url: {CDS_URL}\nkey: {uid}:{api_key}\n"
+def write_cds(api_key):
+    content = f"url: {CDS_URL}\nkey: {api_key}\n"
     with open(CDSAPIRC, "w") as fh:
         fh.write(content)
     _chmod_600(CDSAPIRC)
@@ -87,9 +87,8 @@ def prompt_earthdata():
 
 def prompt_cds():
     print("CDS API credentials (~/.cdsapirc) not found.", file=sys.stderr)
-    uid = input("CDS UID: ")
     api_key = _prompt_secret("CDS API key: ")
-    write_cds(uid, api_key)
+    write_cds(api_key)
     print(f"wrote {CDSAPIRC}")
 
 

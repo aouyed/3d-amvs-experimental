@@ -50,12 +50,11 @@ def compute_metrics(u, v, u_era5, v_era5):
     }
 
 
-def load_coarsened(tag):
-    """Load the authors' coarsened output for both passes (I/O)."""
-    date_string = "07_01_2020"
+def load_coarsened(tag=None):
+    """Load the coarsened output for both passes (I/O)."""
     dsets = {}
-    for pname, orbit in ORBITS.items():
-        f = os.path.join(config.DATA_PROCESSED, f"{tag}_{date_string}_{orbit}.nc")
+    for pname in ("ascending", "descending"):
+        f = os.path.join(config.DATA_PROCESSED, f"wind_coarsened_{pname}_july1.nc")
         dsets[pname] = xr.open_dataset(f).sel(satellite="snpp")
     return dsets
 

@@ -37,7 +37,7 @@ def rmsvd(u, v, ue, ve):
     return float(np.sqrt(np.mean(err[m] ** 2)))
 
 
-def one_ax(ax, lon, lat, u, v, title, scale=120):
+def one_ax(ax, lon, lat, u, v, title, scale=240):
     ax.coastlines()
     ax.set_global()
     ax.gridlines(draw_labels=True, x_inline=False, y_inline=False)

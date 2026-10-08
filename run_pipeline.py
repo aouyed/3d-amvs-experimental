@@ -7,6 +7,7 @@ Usage:
     python run_pipeline.py analyze      # error metrics + figures
     python run_pipeline.py all          # download + run + analyze
     python run_pipeline.py credentials  # re-enter Earthdata/CDS credentials
+    python run_pipeline.py random       # random-vector null model (no-QC product)
 """
 import argparse
 import os
@@ -24,11 +25,15 @@ COARSENED = [
     os.path.join(ROOT, "data", "processed", f"wind_coarsened_{p}_july1.nc")
     for p in ("ascending", "descending")
 ]
+NOQC_COARSENED = [
+    os.path.join(ROOT, "data", "processed", f"wind_coarsened_{p}_july1_noqc.nc")
+    for p in ("ascending", "descending")
+]
 
 
-def _step(script, hint=None):
-    print(f"\n=== {script} ===", flush=True)
-    rc = subprocess.run([sys.executable, script], cwd=ROOT).returncode
+def _step(script, *args, hint=None):
+    print(f"\n=== {script} {' '.join(args)} ===", flush=True)
+    rc = subprocess.run([sys.executable, script, *args], cwd=ROOT).returncode
     if rc != 0:
         msg = f"`{script}` failed (exit {rc})"
         if hint:
@@ -91,6 +96,12 @@ def analyze():
     _step("plot_histograms.py")
 
 
+def random():
+    if not _need(NOQC_COARSENED, "run the no-QC (L2-regridded) pipeline first"):
+        return
+    _step("random_vectors.py", "noqc")
+
+
 def all_():
     download()
     run()
@@ -106,7 +117,7 @@ def credentials():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=["download", "run", "analyze", "all", "credentials"])
+    parser.add_argument("stage", choices=["download", "run", "analyze", "all", "credentials", "random"])
     args = parser.parse_args()
     {"download": download, "run": run, "analyze": analyze, "all": all_,
-     "credentials": credentials}[args.stage]()
+     "credentials": credentials, "random": random}[args.stage]()

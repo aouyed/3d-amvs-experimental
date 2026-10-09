@@ -18,17 +18,17 @@ import setup_credentials as creds
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 ERA5 = os.path.join(ROOT, "data", "raw", "era5", "era5_uv_20200701.nc")
-NPZ = os.path.join(ROOT, "data", "processed", "l2_collocated_july1.npz")
-CKPT = os.path.join(ROOT, "data", "processed", "retrieval_ckpt.npz")
+NPZ = os.path.join(ROOT, "data", "processed", "l2_collocated_july1_noqc.npz")
+CKPT = os.path.join(ROOT, "data", "processed", "retrieval_ckpt_noqc.npz")
 COARSENED = [
-    os.path.join(ROOT, "data", "processed", f"wind_coarsened_{p}_july1.nc")
+    os.path.join(ROOT, "data", "processed", f"wind_coarsened_{p}_july1_noqc.nc")
     for p in ("ascending", "descending")
 ]
 
 
-def _step(script, hint=None):
-    print(f"\n=== {script} ===", flush=True)
-    rc = subprocess.run([sys.executable, script], cwd=ROOT).returncode
+def _step(script, *args, hint=None):
+    print(f"\n=== {script} {' '.join(args)} ===", flush=True)
+    rc = subprocess.run([sys.executable, script, *args], cwd=ROOT).returncode
     if rc != 0:
         msg = f"`{script}` failed (exit {rc})"
         if hint:
@@ -74,21 +74,21 @@ def download():
 def run():
     if not _need([ERA5], "run `python run_pipeline.py download` first"):
         return
-    _step("collocate_full_day.py")
+    _step("collocate_l2_noqc.py")
     if not _need([NPZ], "collocation failed"):
         return
-    _step("run_retrieval_all_levels.py")
+    _step("run_retrieval_all_levels.py", "noqc")
     if not _need([CKPT], "retrieval failed"):
         return
-    _step("run_vertical_coarsening.py")
+    _step("run_vertical_coarsening.py", "noqc")
 
 
 def analyze():
     if not _need(COARSENED, "run `python run_pipeline.py run` first"):
         return
-    _step("error_analysis.py")
-    _step("plot_quiver_all_levels.py")
-    _step("plot_histograms.py")
+    _step("error_analysis.py", "noqc")
+    _step("plot_quiver_all_levels.py", "noqc")
+    _step("plot_histograms.py", "noqc")
 
 
 def all_():

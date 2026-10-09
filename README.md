@@ -34,14 +34,6 @@ Or everything at once:
 | `run` | `collocate_full_day.py` → `run_retrieval_all_levels.py` → `run_vertical_coarsening.py` | `data/processed/l2_collocated_july1.npz` → `retrieval_ckpt.npz` → `wind_coarsened_{ascending,descending}_july1.nc` |
 | `analyze` | `error_analysis.py`, `plot_quiver_all_levels.py`, `plot_histograms.py` | metrics + `data/processed/plots/*.png` |
 
-## Key finding
-
-The paper gridded CLIMCAPS L2 water vapor to 1° **without quality filtering**
-("we did not apply any quality filtering ahead of gridding"). The published L3
-products are only available QC'd (comprehensive `QCC` or specific `QCS`), so a
-true no-QC field must be re-gridded from L2. Raw (unfiltered) RMSVD vs ERA5 is
-~16–25 m/s; the δ=10 m/s gross-error filter + 5-level coarsening collapses this
-to ~6 m/s, which is therefore a post-filter artifact rather than raw skill.
 
 ## Setup
 
@@ -67,25 +59,8 @@ The `download` stage needs two credential files (both are gitignored — never c
   key: <API_KEY>
   ```
 
-`run_pipeline.py download` (and `all`) prompts interactively for whichever is missing. You can also run `python setup_credentials.py` manually, or `python setup_credentials.py --check` to inspect. In non-interactive/CI runs, create the files yourself — the pipeline prints instructions and exits instead of prompting.
+Command `run_pipeline.py download` (and `all`) prompts interactively for whichever is missing. 
 
-To change credentials (e.g. after an authentication failure), run `python run_pipeline.py credentials` (or `python setup_credentials.py --force`), and `python setup_credentials.py --validate` to test them.
+To change credentials (e.g. after an authentication failure), run `python run_pipeline.py credentials`.
 
-### Dependencies & reproducibility
 
-`requirements.txt` lists the **direct** dependencies with **pinned versions**
-(`==`) so installs are repeatable. This follows pip's guidance that pinning
-"protects you from bugs or incompatibilities in newly released versions"; the
-critical pin here is `opencv-contrib-python-headless==4.10.0.84`, which provides
-`cv2.optflow` (TV-L1 / DualTVL1) used by the retrieval.
-
-`requirements.txt` intentionally omits transitive dependencies (they are
-resolved automatically by pip) and developer-only tools. For a byte-for-byte
-frozen environment, run:
-
-```bash
-pip freeze > requirements.lock.txt
-```
-
-Data (`data/`, `3d_amvs_old/`) and credentials (`~/.netrc`, `~/.cdsapirc`) are
-gitignored and must be obtained/provided locally — never committed.

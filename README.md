@@ -34,8 +34,8 @@ Or everything at once:
 | Command | Runs | Produces |
 |---|---|---|
 | `download` | `download_l2.py`, `download_era5.py` | `data/raw/l2/*`, `data/raw/era5/era5_uv_20200701.nc` |
-| `run` | `collocate_full_day.py` → `run_retrieval_all_levels.py` → `run_vertical_coarsening.py` | `data/processed/l2_collocated_july1.npz` → `retrieval_ckpt.npz` → `wind_coarsened_{ascending,descending}_july1.nc` |
-| `analyze` | `error_analysis.py`, `plot_quiver_all_levels.py`, `plot_histograms.py` | metrics + `data/processed/plots/*.png` |
+| `run` | `collocate_l2_noqc.py` → `run_retrieval_all_levels.py noqc` → `run_vertical_coarsening.py noqc` | `data/processed/l2_collocated_july1_noqc.npz` → `retrieval_ckpt_noqc.npz` → `wind_coarsened_{ascending,descending}_july1_noqc.nc` |
+| `analyze` | `error_analysis.py noqc`, `plot_quiver_all_levels.py noqc`, `plot_histograms.py noqc` | metrics + `data/processed/plots/*.png` |
 
 
 ## Setup

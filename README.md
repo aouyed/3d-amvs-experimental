@@ -17,6 +17,9 @@ here and, once validated, is intended to be pushed to the public `aouyed/3d-amvs
 One command per stage, run in order (each stage skips work already done):
 
 ```bash
+python -m venv .venv                        # 0. create the Python environment (once)
+.venv/bin/pip install -r requirements.txt   # install dependencies
+
 .venv/bin/python run_pipeline.py download   # 1. raw CLIMCAPS L2 + ERA5 (resumable)
 .venv/bin/python run_pipeline.py run        # 2. collocate -> retrieval -> coarsening
 .venv/bin/python run_pipeline.py analyze    # 3. error metrics + figures

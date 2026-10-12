@@ -8,7 +8,7 @@ Original code associated with:
 > Geophysical Research Letters, 50(7), e2022GL101830.
 > https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2022GL101830
 
-This is a cleaner version of `aouyed/3d-amvs` (added as the `upstream` remote).
+This is a cleaner version of `aouyed/3d-amvs'.
 
 ## Quick start
 

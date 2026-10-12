@@ -8,9 +8,7 @@ Original code associated with:
 > Geophysical Research Letters, 50(7), e2022GL101830.
 > https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2022GL101830
 
-This is a **private experimental development repository** that mirrors
-`aouyed/3d-amvs` (added as the `upstream` remote). Experimental work is committed
-here and, once validated, is intended to be pushed to the public `aouyed/3d-amvs`.
+This is a cleaner version of `aouyed/3d-amvs` (added as the `upstream` remote).
 
 ## Quick start
 

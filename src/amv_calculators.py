@@ -9,6 +9,7 @@ import cv2
 import xarray as xr
 import numpy as np
 import inpainter
+import swath_collocator
 
 import config
 
@@ -95,40 +96,7 @@ def swath_initializer(ds, dmins, swath_hours):
     Returns:
         list: List of swath time intervals.
     """
-    number = (swath_hours * 60) / dmins
-    mind = np.nanmin(ds["obs_time"].values)
-    times = np.arange(dmins, dmins * number, dmins)
-    swathes = []
-    swathes.append([mind, mind + np.timedelta64(dmins, "m")])
-    for time in times:
-        time = int(round(time))
-        swathes.append(
-            [mind + np.timedelta64(time, "m"), mind + np.timedelta64(time + dmins, "m")]
-        )
-    return swathes
-
-
-def _to_patch_dataframe(ds_unit):
-    """Convert a patch unit to a DataFrame with satellite in the index."""
-    return (
-        ds_unit.to_dataframe()
-        .dropna(subset=[LABEL])
-        .set_index("satellite", append=True)
-    )
-
-
-def _attach_era5(ds_merged, ds_model, model_t):
-    """Interpolate ERA5 onto the patch cells and merge."""
-    ds_model = ds_model.sel(
-        time=model_t,
-        latitude=ds_merged["latitude"].values,
-        longitude=ds_merged["longitude"].values,
-        method="nearest",
-    )
-    ds_model["latitude"] = ds_merged["latitude"].values
-    ds_model["longitude"] = ds_merged["longitude"].values
-    ds_model = ds_model.drop("time")
-    return xr.merge([ds_merged, ds_model])
+    return swath_collocator.swath_intervals(ds["obs_time"].values, dmins, swath_hours)
 
 
 def prepare_patch(ds_snpp, ds_j1, ds_model, start, end):
@@ -137,24 +105,7 @@ def prepare_patch(ds_snpp, ds_j1, ds_model, start, end):
     Returns:
         ds_merged, ds_snpp, ds_j1, df_snpp
     """
-    ds_j1 = ds_j1.where((ds_j1.obs_time >= start) & (ds_j1.obs_time <= end))
-    model_t = start + np.timedelta64(config.MODEL_MIDTIME_MIN, "m")
-    snpp_start = start + np.timedelta64(config.SNPP_OFFSET_MIN, "m")
-    snpp_end = end + np.timedelta64(config.SNPP_OFFSET_MIN, "m")
-    ds_snpp = ds_snpp.where((ds_snpp.obs_time >= snpp_start) & (ds_snpp.obs_time <= snpp_end))
-
-    cond1 = xr.ufuncs.logical_not(xr.ufuncs.isnan(ds_j1["obs_time"]))
-    cond2 = xr.ufuncs.logical_not(xr.ufuncs.isnan(ds_snpp["obs_time"]))
-    ds_j1_unit = ds_j1[["specific_humidity_mean", "obs_time"]].where(cond1 & cond2)
-    ds_snpp_unit = ds_snpp[["specific_humidity_mean", "obs_time"]].where(cond1 & cond2)
-
-    df_j1 = _to_patch_dataframe(ds_j1_unit)
-    df_snpp = _to_patch_dataframe(ds_snpp_unit)
-    ds_j1 = xr.Dataset.from_dataframe(df_j1)
-    ds_snpp = xr.Dataset.from_dataframe(df_snpp)
-    ds_merged = _attach_era5(xr.merge([ds_j1, ds_snpp]), ds_model, model_t)
-
-    return ds_merged, ds_snpp, ds_j1, df_snpp
+    return swath_collocator.collocate_patch(ds_snpp, ds_j1, ds_model, start, end)
 
 
 def flow_calculator(ds_snpp, ds_j1, ds_merged, param):

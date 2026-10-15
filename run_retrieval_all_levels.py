@@ -3,9 +3,9 @@
 """
 Optical-flow retrieval on all H2O levels (>= 100 hPa cutoff).
 
-Reads data/processed/l2_collocated_july1.npz (built by collocate_full_day.py),
+Reads data/processed/l2_collocated_july1{SUF}.npz (built by the collocation step),
 runs the 5-min swath retrieval (amv_calculators), and checkpoints U/V/UERA/VERA
-per (pass, level) to data/processed/retrieval_ckpt.npz (resumable).
+per (pass, level) to data/processed/retrieval_ckpt{SUF}.npz (resumable).
 
 Vertical coarsening is a separate step: run_vertical_coarsening.py.
 """

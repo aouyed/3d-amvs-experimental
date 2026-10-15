@@ -67,3 +67,14 @@ Command `run_pipeline.py download` (and `all`) prompts interactively for whichev
 To change credentials (e.g. after an authentication failure), run `python run_pipeline.py credentials`.
 
 
+## Tests
+
+```bash
+pip install -r requirements-dev.txt   # pytest
+python -m pytest tests/
+```
+
+Unit tests cover the swath/time collocation (`src/swath_collocator.py`) and a
+synthetic smoke test of the optical-flow AMV retrieval (`src/amv_calculators.py`).
+
+
